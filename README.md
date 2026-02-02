@@ -1,6 +1,6 @@
 # FastAPI AWS Integration Tutorial
 
-[![CI/CD Pipeline](https://github.com/lasalataflavio-hub/fastapi-aws-tutorial/actions/workflows/ci.yml/badge.svg)](https://github.com/lasalataflavio-hub/fastapi-aws-tutorial/actions/workflows/ci.yml)
+[![CI/CD Pipeline](https://github.com/lasalataflavio-hub/fast-api-tutorial/actions/workflows/ci.yml/badge.svg)](https://github.com/lasalataflavio-hub/fast-api-tutorial/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
@@ -70,7 +70,7 @@ Questo tutorial ti insegna:
 
 ```bash
 # Clone del repository
-git clone https://github.com/lasalataflavio-hub/fastapi-aws-tutorial.git
+git clone https://github.com/lasalataflavio-hub/fast-api-tutorial.git
 cd fastapi-aws-tutorial
 
 # Crea ambiente virtuale
@@ -451,10 +451,10 @@ Questo progetto è ideale per:
 
 ### 📊 Statistiche Progetto
 
-![GitHub stars](https://img.shields.io/github/stars/lasalataflavio-hub/fastapi-aws-tutorial?style=social)
-![GitHub forks](https://img.shields.io/github/forks/lasalataflavio-hub/fastapi-aws-tutorial?style=social)
-![GitHub issues](https://img.shields.io/github/issues/lasalataflavio-hub/fastapi-aws-tutorial)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/lasalataflavio-hub/fastapi-aws-tutorial)
+![GitHub stars](https://img.shields.io/github/stars/lasalataflavio-hub/fast-api-tutorial?style=social)
+![GitHub forks](https://img.shields.io/github/forks/lasalataflavio-hub/fast-api-tutorial?style=social)
+![GitHub issues](https://img.shields.io/github/issues/lasalataflavio-hub/fast-api-tutorial)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/lasalataflavio-hub/fast-api-tutorial)
 
 ---
 
