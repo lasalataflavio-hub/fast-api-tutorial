@@ -1,0 +1,15 @@
+# Funding configuration for GitHub Sponsors
+# Questo è un progetto didattico open source
+
+# Se vuoi supportare il progetto:
+# github: YOUR_USERNAME
+# patreon: YOUR_PATREON
+# ko_fi: YOUR_KOFI
+
+# Per ora, il miglior modo per supportare è:
+# - ⭐ Mettere una stella al repository
+# - 🐛 Segnalare bug e problemi
+# - 📚 Migliorare la documentazione
+# - 🤝 Contribuire con codice
+
+custom: ["https://github.com/lasalataflavio-hub/fastapi-aws-tutorial/blob/main/CONTRIBUTING.md"]

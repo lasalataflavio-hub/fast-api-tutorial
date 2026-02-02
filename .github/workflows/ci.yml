@@ -1,0 +1,118 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+    - name: Test with pytest (basic syntax check)
+      run: |
+        pip install pytest
+        # Basic import test
+        python -c "import app.main; print('✓ App imports successfully')"
+        python -c "from app.main import app; print('✓ FastAPI app created successfully')"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        docker build -t fastapi-aws-tutorial:latest .
+
+    - name: Test Docker image
+      run: |
+        # Start container in background
+        docker run -d -p 8000:8000 --name test-container fastapi-aws-tutorial:latest
+        
+        # Wait for container to start
+        sleep 10
+        
+        # Test health endpoint (should work even without AWS credentials)
+        curl -f http://localhost:8000/ || exit 1
+        
+        # Cleanup
+        docker stop test-container
+        docker rm test-container
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run security checks
+      run: |
+        # Check for common security issues
+        echo "🔍 Checking for hardcoded secrets..."
+        
+        # Check for AWS credentials
+        if grep -r "AKIA\|aws_access_key_id\|aws_secret_access_key" . --exclude-dir=.git --exclude="*.md" --exclude="*.yml"; then
+          echo "❌ Found potential AWS credentials in code!"
+          exit 1
+        fi
+        
+        # Check for hardcoded account IDs (except in documentation)
+        if grep -r "[0-9]\{12\}" . --exclude-dir=.git --exclude="*.md" --exclude="*.yml" --exclude=".env.example"; then
+          echo "❌ Found potential hardcoded AWS Account IDs!"
+          exit 1
+        fi
+        
+        echo "✅ Security checks passed!"
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check documentation
+      run: |
+        echo "📚 Checking documentation completeness..."
+        
+        # Check required files exist
+        required_files=("README.md" "CONTRIBUTING.md" "LICENSE" "requirements.txt" "Dockerfile")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          fi
+        done
+        
+        # Check docs directory
+        if [ ! -d "docs" ]; then
+          echo "❌ Missing docs directory"
+          exit 1
+        fi
+        
+        echo "✅ Documentation checks passed!"

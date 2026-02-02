@@ -1,0 +1,99 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment variables (IMPORTANTE per sicurezza!)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# AWS Credentials (CRITICO per sicurezza!)
+*.pem
+*.key
+.aws/
+aws-credentials.txt
+**/aws-credentials*
+**/*credentials*
+**/*secrets*
+
+# IDE e Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+/tmp/
+.temp/
+
+# Docker
+.dockerignore
+
+# Documentation build
+docs/_build/
+site/
+_site/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# GitHub specific
+.github/workflows/secrets.yml
+
+# Kiro IDE (opzionale - rimuovi se vuoi includerli nel repo)
+.kiro/
+
+# Local development
+local/
+dev/
+scratch/
+
+# Backup files
+*.backup
+*.bak
+*~
+
