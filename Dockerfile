@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Imposta la directory di lavoro nel container
 WORKDIR /code
