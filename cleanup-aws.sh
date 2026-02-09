@@ -18,9 +18,12 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 # Variabili (usa .env.local o default)
-AWS_PROFILE=${AWS_PROFILE:-[your-aws-profile]}
+AWS_PROFILE=${AWS_PROFILE:-default}
 AWS_REGION=${AWS_REGION:-eu-west-1}
-AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID:-[your-aws-account-id]}
+if [ -z "$AWS_ACCOUNT_ID" ]; then
+    echo -e "${RED}ERRORE: AWS_ACCOUNT_ID non trovato in .env.local${NC}"
+    exit 1
+fi
 TABLE_NAME=${TABLE_NAME:-fastapi-tutorial-items}
 SECRET_NAME=${SECRET_NAME:-fastapi-tutorial-secrets}
 KMS_KEY_ALIAS=${KMS_KEY_ALIAS:-alias/fastapi-tutorial-key}

@@ -55,7 +55,7 @@ Questo tutorial ti insegna:
 ## 📋 Prerequisiti
 
 - **Account AWS** con permessi per creare risorse
-- **AWS CLI** installato e configurato con profile 'plug' (`aws configure --profile plug`)
+- **AWS CLI** installato e configurato (`aws configure`)
 - **Docker** installato
 - **Python 3.11+** (per sviluppo locale)
 - Conoscenza base di:
@@ -66,97 +66,92 @@ Questo tutorial ti insegna:
 
 ## 🚀 Quick Start
 
-### 1. Clone e Setup Locale
+### Opzione 1: Test Rapido con Docker (Consigliato)
+
+Se vuoi solo vedere il progetto funzionare senza installare Python:
 
 ```bash
-# Clone del repository
+# 1. Clone del repository
 git clone https://github.com/lasalataflavio-hub/fast-api-tutorial.git
-cd fastapi-aws-tutorial
+cd fast-api-tutorial
 
-# Crea ambiente virtuale
+# 2. Build Docker image
+docker build -t fastapi-tutorial .
+
+# 3. Run (senza AWS - solo per vedere la documentazione)
+docker run -p 8000:8000 fastapi-tutorial
+
+# 4. Apri browser
+open http://localhost:8000/docs
+```
+
+L'app parte anche senza AWS configurato. Vedrai la documentazione interattiva su `/docs`.
+
+### Opzione 2: Setup Completo con AWS
+
+Per usare tutte le funzionalità (DynamoDB, Secrets Manager, ecc.):
+
+#### 1. Clone e Dipendenze
+
+```bash
+git clone https://github.com/lasalataflavio-hub/fast-api-tutorial.git
+cd fast-api-tutorial
+
+# Opzionale: crea ambiente virtuale Python
 python -m venv venv
-source venv/bin/activate  # Su Windows: venv\Scripts\activate
-
-# Installa dipendenze
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# Copia file di configurazione
+#### 2. Configura AWS CLI
+
+```bash
+# Configura le tue credenziali AWS
+aws configure --profile tuo-profile
+
+# Verifica configurazione e ottieni il tuo Account ID
+aws sts get-caller-identity --profile tuo-profile
+```
+
+#### 3. Crea File .env.local
+
+**IMPORTANTE**: Il file `.env.local` non è su Git per sicurezza. Devi crearlo:
+
+```bash
+# Copia il template
 cp .env.example .env.local
 ```
 
-**⚠️ IMPORTANTE**: Modifica `.env.local` con i tuoi dati AWS reali prima di procedere!
-
-### 2. Setup Infrastruttura AWS
-
-**Importante**: Configura il profile AWS 'plug' e il tuo Account ID:
+Modifica `.env.local` con i tuoi dati AWS:
 
 ```bash
-# 1. Configura il profile plug
-aws configure --profile plug
-
-# 2. Crea file di configurazione locale
-cp .env.local.example .env.local
-
-# 3. Modifica .env.local con il tuo AWS Account ID
-# Apri .env.local e sostituisci 123456789012 con il tuo Account ID
-nano .env.local  # oppure usa il tuo editor preferito
-
-# 4. Verifica
-aws sts get-caller-identity --profile plug
+AWS_PROFILE=tuo-profile          # Il profile che hai configurato
+AWS_REGION=eu-west-1             # La tua region AWS
+AWS_ACCOUNT_ID=123456789012      # Il tuo Account ID (dal comando sopra)
 ```
 
-**Opzione A: Setup Automatico (Consigliato) 🚀**
+#### 4. Setup Infrastruttura AWS
 
+**Windows (PowerShell)**:
+```powershell
+powershell -ExecutionPolicy Bypass -File setup-aws.ps1
+```
+
+**Linux/macOS (Bash)**:
 ```bash
-# Esegui lo script di setup (crea tutto automaticamente)
+chmod +x setup-aws.sh
 ./setup-aws.sh
 ```
 
-Lo script caricherà automaticamente la configurazione da `.env.local`.
+Lo script crea automaticamente tutte le risorse AWS (5-10 minuti).
 
-Lo script creerà automaticamente:
-- ✅ KMS Key per encryption
-- ✅ Secret in Secrets Manager
-- ✅ Tabella DynamoDB
-- ✅ IAM Role e Policy
-- ✅ Repository ECR
-- ✅ Servizio App Runner
-- ✅ Build e deploy della prima immagine
+#### 5. Test dell'API
 
-**Opzione B: Setup Manuale**
-
-Segui la guida completa in [docs/SETUP.md](docs/SETUP.md) per creare le risorse manualmente.
-
-### 3. Deploy su AWS
+Dopo il deployment, lo script mostrerà l'URL del servizio. Testa l'API:
 
 ```bash
-# Build immagine Docker
-docker build -t fastapi-docker-example:latest .
-
-# Login a ECR
-aws ecr get-login-password --region eu-west-1 | \
-  docker login --username AWS --password-stdin \
-  ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com
-
-# Tag e push
-docker tag fastapi-docker-example:latest \
-  ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/fastapi-docker-example:latest
-
-docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com/fastapi-docker-example:latest
-
-# App Runner aggiornerà automaticamente il servizio
-```
-
-### 4. Test dell'API
-
-```bash
-# Ottieni URL del servizio
-export SERVICE_URL=$(aws apprunner describe-service \
-  --service-arn <service-arn> \
-  --region eu-west-1 \
-  --profile plug \
-  --query 'Service.ServiceUrl' \
-  --output text)
+# Sostituisci con il tuo service URL
+SERVICE_URL="tuo-service-url.awsapprunner.com"
 
 # Test health check
 curl https://${SERVICE_URL}/health
@@ -179,7 +174,6 @@ open https://${SERVICE_URL}/docs
 
 ## 📚 Documentazione
 
-- **[AWS_PROFILE_SETUP.md](AWS_PROFILE_SETUP.md)** - Setup profile AWS 'plug' (INIZIA DA QUI!)
 - **[SETUP.md](docs/SETUP.md)** - Guida completa setup AWS con comandi step-by-step
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Spiegazione dettagliata dell'architettura e design decisions
 - **[CODE_GUIDE.md](docs/CODE_GUIDE.md)** - Walkthrough del codice con esempi e pattern
@@ -225,42 +219,35 @@ open https://${SERVICE_URL}/docs
 
 ## 🛠️ Sviluppo Locale
 
-### Run con Uvicorn
+### Test Veloce (senza AWS)
 
 ```bash
-# Opzione 1: Senza AWS (solo per vedere la documentazione)
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Con Docker
+docker run -p 8000:8000 fastapi-tutorial
+open http://localhost:8000/docs
 
-# Opzione 2: Con AWS configurato (per testare funzionalità complete)
-export AWS_PROFILE=plug
-export AWS_REGION=eu-west-1
-export DYNAMODB_TABLE_NAME=fastapi-tutorial-items
-export SECRET_NAME=fastapi-tutorial-secrets
-export DEBUG=true
-
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Apri browser
+# Oppure con Python (se hai installato le dipendenze)
+uvicorn app.main:app --reload
 open http://localhost:8000/docs
 ```
 
-**Nota**: L'applicazione parte anche senza credenziali AWS. Vedrai warning nei log ma potrai accedere a `/docs` per vedere la documentazione API.
+L'app parte anche senza AWS. Vedrai warning nei log ma potrai accedere alla documentazione.
 
-### Run con Docker
+### Test Completo (con AWS)
 
 ```bash
-# Build
-docker build -t fastapi-tutorial .
+# Configura variabili d'ambiente
+export AWS_PROFILE=tuo-profile
+export AWS_REGION=eu-west-1
+export DYNAMODB_TABLE_NAME=fastapi-tutorial-items
+export SECRET_NAME=fastapi-tutorial-secrets
 
 # Run
-docker run -p 8000:8000 \
-  -e AWS_REGION=eu-west-1 \
-  -e DYNAMODB_TABLE_NAME=fastapi-tutorial-items \
-  -e SECRET_NAME=fastapi-tutorial-secrets \
-  fastapi-tutorial
+uvicorn app.main:app --reload
 
 # Test
 curl http://localhost:8000/health
+curl http://localhost:8000/items
 ```
 
 ## 📁 Struttura del Progetto
@@ -366,24 +353,145 @@ Puoi testare tutti gli endpoints direttamente dal browser!
 
 ## 🔧 Troubleshooting
 
-Problemi comuni e soluzioni:
+### Problemi Comuni
 
-### "Table not found"
+#### 1. PowerShell blocca l'esecuzione dello script (Windows)
+
+**Errore**:
+```
+.\setup-aws.ps1 : Impossibile caricare il file. L'esecuzione di script è disabilitata.
+```
+
+**Soluzione**:
+```powershell
+# Usa questo comando invece
+powershell -ExecutionPolicy Bypass -File setup-aws.ps1
+```
+
+#### 2. AWS_ACCOUNT_ID non trovato
+
+**Errore**:
+```
+ERRORE: AWS_ACCOUNT_ID non trovato in .env.local
+```
+
+**Soluzione**:
+```bash
+# 1. Ottieni il tuo Account ID
+aws sts get-caller-identity --profile tuo-profile --query Account --output text
+
+# 2. Aggiungi al file .env.local
+echo "AWS_ACCOUNT_ID=123456789012" >> .env.local
+```
+
+#### 3. Table not found
+
+**Errore**:
+```
+Table not found: fastapi-tutorial-items
+```
+
+**Soluzione**:
 ```bash
 # Verifica che la tabella esista
-aws dynamodb describe-table --table-name fastapi-tutorial-items --region eu-west-1
+aws dynamodb describe-table --table-name fastapi-tutorial-items --region eu-west-1 --profile tuo-profile
+
+# Se non esiste, esegui di nuovo il setup
+powershell -ExecutionPolicy Bypass -File setup-aws.ps1
 ```
 
-### "AccessDeniedException"
+#### 4. AccessDeniedException
+
+**Errore**:
+```
+AccessDeniedException: User is not authorized to perform...
+```
+
+**Soluzione**:
 ```bash
-# Verifica IAM permissions del role
-aws iam list-attached-role-policies --role-name FastAPITutorialAppRunnerRole
+# Verifica IAM permissions del tuo utente
+aws iam list-attached-user-policies --user-name tuo-username
+
+# Assicurati di avere i permessi per:
+# - DynamoDB
+# - Secrets Manager
+# - KMS
+# - ECR
+# - App Runner
+# - IAM
 ```
 
-### "Secret not found"
+#### 5. Secret not found
+
+**Errore**:
+```
+Secret not found: fastapi-tutorial-secrets
+```
+
+**Soluzione**:
 ```bash
 # Verifica che il secret esista
-aws secretsmanager describe-secret --secret-id fastapi-tutorial-secrets --region eu-west-1
+aws secretsmanager describe-secret --secret-id fastapi-tutorial-secrets --region eu-west-1 --profile tuo-profile
+
+# Se non esiste, esegui di nuovo il setup
+```
+
+### 🗑️ Eliminare Tutte le Risorse (Cleanup)
+
+Quando hai finito di usare il progetto, elimina tutte le risorse per evitare costi:
+
+#### Su Windows (PowerShell):
+
+```powershell
+# Esegui lo script di cleanup
+powershell -ExecutionPolicy Bypass -File cleanup-aws.ps1
+
+# Lo script chiederà conferma
+# Digita 'DELETE' per confermare l'eliminazione
+```
+
+#### Su Linux/macOS (Bash):
+
+```bash
+# Rendi eseguibile lo script
+chmod +x cleanup-aws.sh
+
+# Esegui lo script
+./cleanup-aws.sh
+
+# Lo script chiederà conferma
+# Digita 'DELETE' per confermare l'eliminazione
+```
+
+**Cosa viene eliminato**:
+- ✅ App Runner Service
+- ✅ ECR Repository (con tutte le immagini)
+- ✅ DynamoDB Table (con tutti i dati)
+- ✅ Secrets Manager Secret
+- ✅ IAM Roles e Policies
+- ⏳ KMS Key (scheduled deletion dopo 7 giorni)
+
+**ATTENZIONE**: L'operazione è IRREVERSIBILE! Tutti i dati saranno persi.
+
+**Costi dopo cleanup**: €0/mese (la KMS Key sarà eliminata automaticamente dopo 7 giorni)
+
+### 📝 Ciclo Completo di Sviluppo
+
+```bash
+# 1. Setup iniziale
+powershell -ExecutionPolicy Bypass -File setup-aws.ps1
+
+# 2. Sviluppo e test locale
+uvicorn app.main:app --reload
+
+# 3. Deploy modifiche
+./deploy.sh  # o deploy.ps1 su Windows
+
+# 4. Test in produzione
+curl https://tuo-service-url.awsapprunner.com/health
+
+# 5. Cleanup quando finito
+powershell -ExecutionPolicy Bypass -File cleanup-aws.ps1
 ```
 
 Per troubleshooting dettagliato, consulta [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
@@ -426,21 +534,6 @@ Leggi [CONTRIBUTING.md](CONTRIBUTING.md) per linee guida dettagliate.
 ## 📝 License
 
 Questo progetto è rilasciato sotto licenza MIT - vedi il file LICENSE per dettagli.
-
-## 👨‍🏫 Per Docenti
-
-Questo progetto è ideale per:
-- Corsi di Cloud Computing
-- Corsi di Sviluppo Web Backend
-- Workshop su AWS
-- Progetti di laboratorio
-
-**Durata stimata**: 4-6 ore (setup + implementazione + esercizi)
-
-**Prerequisiti studenti**:
-- Python base
-- Concetti REST API
-- Familiarità con terminal/CLI
 
 ## 🙋 Supporto e Community
 

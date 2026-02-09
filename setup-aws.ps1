@@ -1,5 +1,8 @@
 # setup-aws.ps1 - Script PowerShell per setup iniziale completo dell'infrastruttura AWS
 # Esegui questo script UNA SOLA VOLTA per creare tutte le risorse necessarie
+#
+# ESECUZIONE:
+# powershell -ExecutionPolicy Bypass -File setup-aws.ps1
 
 $ErrorActionPreference = "Continue"
 
@@ -17,9 +20,13 @@ if (Test-Path .env.local) {
 }
 
 # Variabili (usa .env.local o default)
-if (-not $AWS_PROFILE) { $AWS_PROFILE = "[your-aws-profile]" }
+if (-not $AWS_PROFILE) { $AWS_PROFILE = "default" }
 if (-not $AWS_REGION) { $AWS_REGION = "eu-west-1" }
-if (-not $AWS_ACCOUNT_ID) { $AWS_ACCOUNT_ID = "[your-aws-account-id]" }
+if (-not $AWS_ACCOUNT_ID) { 
+    Write-Host "ERRORE: AWS_ACCOUNT_ID non trovato in .env.local" -ForegroundColor Red
+    Write-Host "Crea il file .env.local con le tue credenziali AWS" -ForegroundColor Yellow
+    exit 1
+}
 if (-not $TABLE_NAME) { $TABLE_NAME = "fastapi-tutorial-items" }
 if (-not $SECRET_NAME) { $SECRET_NAME = "fastapi-tutorial-secrets" }
 if (-not $KMS_KEY_ALIAS) { $KMS_KEY_ALIAS = "alias/fastapi-tutorial-key" }

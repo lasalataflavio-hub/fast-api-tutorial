@@ -16,9 +16,12 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Variabili (usa .env.local o default)
-AWS_PROFILE=${AWS_PROFILE:-[your-aws-profile]}
+AWS_PROFILE=${AWS_PROFILE:-default}
 AWS_REGION=${AWS_REGION:-eu-west-1}
-AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID:-[your-aws-account-id]}
+if [ -z "$AWS_ACCOUNT_ID" ]; then
+    echo -e "${RED}ERRORE: AWS_ACCOUNT_ID non trovato in .env.local${NC}"
+    exit 1
+fi
 ECR_REPO_NAME=${ECR_REPO_NAME:-fastapi-docker-example}
 ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
 
